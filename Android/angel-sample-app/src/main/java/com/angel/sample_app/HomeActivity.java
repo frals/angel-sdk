@@ -32,6 +32,9 @@
 package com.angel.sample_app;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.Handler;
@@ -67,9 +70,17 @@ public class HomeActivity extends Activity {
         setContentView(R.layout.activity_measurements);
         orientation = getResources().getConfiguration().orientation;
 
-        mHandler = new Handler(this.getMainLooper());
+        SharedPreferences preferences = getApplicationContext().getSharedPreferences("ble", Context.MODE_PRIVATE);
+        mBleDeviceAddress = preferences.getString("ble", "");
+        if (mBleDeviceAddress.isEmpty()) {
+            throw new RuntimeException("Activity started without a BT device, abort!");
+        }
 
-        mPeriodicReader = new Runnable() {
+        mHandler = new Handler(this.getMainLooper());
+        Intent intent = new Intent(getApplicationContext(), BluetoothService.class);
+        startService(intent);
+
+        /*mPeriodicReader = new Runnable() {
             @Override
             public void run() {
                 mBleDevice.readRemoteRssi();
@@ -88,32 +99,28 @@ public class HomeActivity extends Activity {
             mBlueOpticalWaveformView.setStrokeColor(0xffffffff);
             mAccelerationWaveformView = (GraphView) findViewById(R.id.graph_acceleration);
             mAccelerationWaveformView.setStrokeColor(0xfff7a300);
-        }
+        }*/
     }
 
     protected void onStart() {
         super.onStart();
 
-        Bundle extras = getIntent().getExtras();
-        assert(extras != null);
-        mBleDeviceAddress = extras.getString("ble_device_address");
-
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
+        /*if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
             connectGraphs(mBleDeviceAddress);
         } else {
             connect(mBleDeviceAddress);
-        }
+        }*/
 
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+        /*if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             displaySignalStrength(0);
         }
         unscheduleUpdaters();
-        mBleDevice.disconnect();
+        mBleDevice.disconnect();*/
     }
 
     private void connectGraphs(String deviceAddress) {

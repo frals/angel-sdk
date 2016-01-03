@@ -33,9 +33,11 @@ package com.angel.sample_app;
 import android.app.Activity;
 import android.app.Dialog;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnDismissListener;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.os.Bundle;
@@ -200,7 +202,13 @@ public class ScanActivity extends Activity implements OnClickListener {
                 BluetoothDevice bluetoothDevice = mDeviceListAdapter.getItem(position).getBluetoothDevice();
                 Assert.assertTrue(bluetoothDevice != null);
                 Intent intent = new Intent(parent.getContext(), HomeActivity.class);
-                intent.putExtra("ble_device_address", bluetoothDevice.getAddress());
+                //intent.putExtra("ble_device_address", bluetoothDevice.getAddress());
+
+                SharedPreferences sharedPref = getApplicationContext().getSharedPreferences("ble", Context.MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("ble", bluetoothDevice.getAddress());
+                editor.commit();
+
                 startActivity(intent);
             }
         });
