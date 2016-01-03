@@ -1,1 +1,3 @@
-include ':angel-sdk-debug', ':angel-sdk-release'
+//include ':angel-sdk-debug', ':angel-sdk-release'
+include ':angel-sdk'
+project(':angel-sdk').projectDir = new File('../angel-sdk')
