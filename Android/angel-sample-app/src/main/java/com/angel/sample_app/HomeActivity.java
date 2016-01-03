@@ -32,6 +32,8 @@
 package com.angel.sample_app;
 
 import android.app.Activity;
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -77,6 +79,7 @@ public class HomeActivity extends Activity {
         }
 
         mHandler = new Handler(this.getMainLooper());
+
         Intent intent = new Intent(getApplicationContext(), BluetoothService.class);
         startService(intent);
 

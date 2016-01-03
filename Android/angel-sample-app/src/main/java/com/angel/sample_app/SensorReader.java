@@ -9,6 +9,7 @@ import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;
 import com.angel.sdk.ChAccelerationEnergyMagnitude;
 import com.angel.sdk.ChAccelerationWaveform;
+import com.angel.sdk.ChAlarmClockControlPoint;
 import com.angel.sdk.ChBatteryLevel;
 import com.angel.sdk.ChHeartRateMeasurement;
 import com.angel.sdk.ChOpticalWaveform;
@@ -18,6 +19,7 @@ import com.angel.sdk.SrvActivityMonitoring;
 import com.angel.sdk.SrvBattery;
 import com.angel.sdk.SrvHealthThermometer;
 import com.angel.sdk.SrvHeartRate;
+import com.angel.sdk.SrvAlarmClock;
 
 public class SensorReader {
 
@@ -115,6 +117,8 @@ public class SensorReader {
             });
 
             //mChAccelerationEnergyMagnitude = device.getService(SrvActivityMonitoring.class).getChAccelerationEnergyMagnitude();
+            //ChAlarmClockControlPoint clockControlPoint = device.getService(SrvAlarmClock.class).getControlPointCharacteristic();
+            // TOOD: once angel-sdk supports it, set correct device time
         }
 
 

@@ -1,19 +1,28 @@
 package com.angel.sample_app;
 
+import android.app.Notification;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.angel.sample_app.persistence.DatabaseHelper;
+import com.angel.sample_app.persistence.ReadingsContract;
+
+import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
 
 public class BluetoothService extends Service implements SensorReading {
 
     private static final String TAG = "ServiceReading";
     private SensorReader mSensor = null;
+    DatabaseHelper mDbHelper = null;
 
     public BluetoothService() {
     }
@@ -32,8 +41,17 @@ public class BluetoothService extends Service implements SensorReading {
         if (bleDeviceAddress.isEmpty()) {
             Toast.makeText(this, "No device found!", Toast.LENGTH_SHORT).show();
         } else {
+            mDbHelper = new DatabaseHelper(getApplicationContext());
             mSensor = new SensorReader(getApplicationContext(), bleDeviceAddress, this);
             mSensor.connect();
+
+            Notification notification = new Notification(R.drawable.ic_top_logo, "Angel Sensor connected",
+                    System.currentTimeMillis());
+            Intent notificationIntent = new Intent(this, HomeActivity.class);
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+            notification.setLatestEventInfo(this, "Angel Sensor",
+                    "Connected", pendingIntent);
+            startForeground(123, notification);
         }
 
         // If we get killed, after returning from here, restart
@@ -56,7 +74,16 @@ public class BluetoothService extends Service implements SensorReading {
     @Override
     public void onHeartRateReading(int bpm, int energyExpended, int[] RRIntervals) {
         Log.d(TAG, "HR: " + bpm + " EnergyExpended: " + energyExpended);
-        Toast.makeText(this, "HR: " + bpm, Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "HR: " + bpm, Toast.LENGTH_LONG).show();
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+
+        long unixTime = System.currentTimeMillis() / 1000L;
+        ContentValues values = new ContentValues();
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "hr");
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, bpm);
+
+        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
@@ -67,12 +94,30 @@ public class BluetoothService extends Service implements SensorReading {
     @Override
     public void onBatteryLevelReading(int percent) {
         Log.d(TAG, "Battery: " + percent + "%");
-        Toast.makeText(this, "Battery: " + percent + "%", Toast.LENGTH_LONG).show();
+        //Toast.makeText(this, "Battery: " + percent + "%", Toast.LENGTH_LONG).show();
+
+        long unixTime = System.currentTimeMillis() / 1000L;
+        ContentValues values = new ContentValues();
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "battery");
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, percent);
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
     public void onTemperatureReading(float degreesCelsius, int temperatureUnits, GregorianCalendar timestamp, int temperatureType) {
-        Log.d(TAG, "Temp: " + degreesCelsius + "c. Timestamp: " + timestamp.toString());
+        Log.d(TAG, "Temp: " + degreesCelsius + "c. Timestamp: " + format(timestamp));
+
+        long unixTime = System.currentTimeMillis() / 1000L;
+        ContentValues values = new ContentValues();
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "temp");
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, degreesCelsius);
+
+        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
@@ -84,5 +129,13 @@ public class BluetoothService extends Service implements SensorReading {
     public void onSensorDisconnected() {
         Log.d(TAG, "Sensor disconnected!");
         Toast.makeText(this, "Sensor lost!", Toast.LENGTH_LONG).show();
+        stopForeground(true);
+        stopSelf();
+    }
+
+    public static String format(GregorianCalendar calendar) {
+        SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        fmt.setCalendar(calendar);
+        return fmt.format(calendar.getTime());
     }
 }
