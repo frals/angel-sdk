@@ -38,6 +38,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -47,6 +49,8 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.angel.sample_app.persistence.DatabaseHelper;
+import com.angel.sample_app.persistence.ReadingsContract;
 import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;
 import com.angel.sdk.ChAccelerationEnergyMagnitude;
@@ -64,7 +68,12 @@ import com.angel.sdk.SrvWaveformSignal;
 
 import junit.framework.Assert;
 
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
+
 public class HomeActivity extends Activity {
+
+    private DatabaseHelper mDbHelper;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -83,26 +92,80 @@ public class HomeActivity extends Activity {
         Intent intent = new Intent(getApplicationContext(), BluetoothService.class);
         startService(intent);
 
-        /*mPeriodicReader = new Runnable() {
+        mDbHelper = new DatabaseHelper(getApplicationContext());
+
+        mPeriodicReader = new Runnable() {
             @Override
             public void run() {
-                mBleDevice.readRemoteRssi();
-                if (mChAccelerationEnergyMagnitude != null) {
-                    mChAccelerationEnergyMagnitude.readValue(mAccelerationEnergyMagnitudeListener);
-                }
-
+                updateReadings();
                 mHandler.postDelayed(mPeriodicReader, RSSI_UPDATE_INTERVAL);
             }
         };
+        updateReadings();
+        scheduleUpdaters();
+    }
 
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            mGreenOpticalWaveformView = (GraphView) findViewById(R.id.graph_green);
-            mGreenOpticalWaveformView.setStrokeColor(0xffffffff);
-            mBlueOpticalWaveformView = (GraphView) findViewById(R.id.graph_blue);
-            mBlueOpticalWaveformView.setStrokeColor(0xffffffff);
-            mAccelerationWaveformView = (GraphView) findViewById(R.id.graph_acceleration);
-            mAccelerationWaveformView.setStrokeColor(0xfff7a300);
-        }*/
+    private void updateReadings() {
+        getLastTemp();
+        getLastBPM();
+        getLastBat();
+    }
+
+    private void getLastBat() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        Cursor cursor =
+                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
+                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
+                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'battery'", // c. selections
+                        null, // d. selections args
+                        null, // e. group by
+                        null, // f. having
+                        "TIMESTAMP DESC", // g. order by
+                        "1"); // h. limit
+
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        displayBatteryLevel(Integer.parseInt(cursor.getString(2)));
+    }
+
+    private void getLastBPM() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        Cursor cursor =
+                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
+                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
+                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'hr'", // c. selections
+                        null, // d. selections args
+                        null, // e. group by
+                        null, // f. having
+                        "TIMESTAMP DESC", // g. order by
+                        "1"); // h. limit
+
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        displayHeartRate(cursor.getString(2));
+    }
+
+    private void getLastTemp() {
+        SQLiteDatabase db = mDbHelper.getReadableDatabase();
+
+        Cursor cursor =
+                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
+                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
+                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'temp'", // c. selections
+                        null, // d. selections args
+                        null, // e. group by
+                        null, // f. having
+                        "TIMESTAMP DESC", // g. order by
+                        "1"); // h. limit
+
+        if (cursor != null)
+            cursor.moveToFirst();
+
+        displayTemperature(cursor.getString(2));
     }
 
     protected void onStart() {
@@ -119,6 +182,7 @@ public class HomeActivity extends Activity {
     @Override
     protected void onStop() {
         super.onStop();
+        unscheduleUpdaters();
         /*if (orientation == Configuration.ORIENTATION_PORTRAIT) {
             displaySignalStrength(0);
         }
@@ -153,27 +217,6 @@ public class HomeActivity extends Activity {
         // A device has been chosen from the list. Create an instance of BleDevice,
         // populate it with interesting services and then connect
 
-        if (mBleDevice != null) {
-            mBleDevice.disconnect();
-        }
-        mBleDevice = new BleDevice(this, mDeviceLifecycleCallback, mHandler);
-
-        try {
-            mBleDevice.registerServiceClass(SrvHeartRate.class);
-            mBleDevice.registerServiceClass(SrvHealthThermometer.class);
-            mBleDevice.registerServiceClass(SrvBattery.class);
-            mBleDevice.registerServiceClass(SrvActivityMonitoring.class);
-
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError();
-        } catch (IllegalAccessException e) {
-            throw new AssertionError();
-        } catch (InstantiationException e) {
-            throw new AssertionError();
-        }
-
-        mBleDevice.connect(deviceAddress);
-
         scheduleUpdaters();
         displayOnDisconnect();
     }
@@ -198,38 +241,6 @@ public class HomeActivity extends Activity {
     };
 
 
-    /**
-     * Upon Heart Rate Service discovery starts listening to incoming heart rate
-     * notifications. {@code onBluetoothServicesDiscovered} is triggered after
-     * {@link BleDevice#connect(String)} is called.
-     */
-    private final BleDevice.LifecycleCallback mDeviceLifecycleCallback = new BleDevice.LifecycleCallback() {
-        @Override
-        public void onBluetoothServicesDiscovered(BleDevice device) {
-            device.getService(SrvHeartRate.class).getHeartRateMeasurement().enableNotifications(mHeartRateListener);
-            device.getService(SrvHealthThermometer.class).getTemperatureMeasurement().enableNotifications(mTemperatureListener);
-            device.getService(SrvBattery.class).getBatteryLevel().enableNotifications(mBatteryLevelListener);
-            device.getService(SrvActivityMonitoring.class).getStepCount().enableNotifications(mStepCountListener);
-            mChAccelerationEnergyMagnitude = device.getService(SrvActivityMonitoring.class).getChAccelerationEnergyMagnitude();
-            Assert.assertNotNull(mChAccelerationEnergyMagnitude);
-        }
-
-
-        @Override
-        public void onBluetoothDeviceDisconnected() {
-            displayOnDisconnect();
-            unscheduleUpdaters();
-
-            // Re-connect immediately
-            connect(mBleDeviceAddress);
-        }
-
-        @Override
-        public void onReadRemoteRssi(final int rssi) {
-            displaySignalStrength(rssi);
-        }
-    };
-
     private final BleCharacteristic.ValueReadyCallback<ChAccelerationWaveform.AccelerationWaveformValue> mAccelerationWaveformListener = new BleCharacteristic.ValueReadyCallback<ChAccelerationWaveform.AccelerationWaveformValue>() {
         @Override
         public void onValueReady(ChAccelerationWaveform.AccelerationWaveformValue accelerationWaveformValue) {
@@ -252,37 +263,6 @@ public class HomeActivity extends Activity {
         }
     };
 
-    private final BleCharacteristic.ValueReadyCallback<ChHeartRateMeasurement.HeartRateMeasurementValue> mHeartRateListener = new BleCharacteristic.ValueReadyCallback<ChHeartRateMeasurement.HeartRateMeasurementValue>() {
-        @Override
-        public void onValueReady(final ChHeartRateMeasurement.HeartRateMeasurementValue hrMeasurement) {
-            displayHeartRate(hrMeasurement.getHeartRateMeasurement());
-        }
-    };
-
-    private final BleCharacteristic.ValueReadyCallback<ChBatteryLevel.BatteryLevelValue> mBatteryLevelListener =
-        new BleCharacteristic.ValueReadyCallback<ChBatteryLevel.BatteryLevelValue>() {
-        @Override
-        public void onValueReady(final ChBatteryLevel.BatteryLevelValue batteryLevel) {
-            displayBatteryLevel(batteryLevel.value);
-        }
-    };
-
-    private final BleCharacteristic.ValueReadyCallback<ChTemperatureMeasurement.TemperatureMeasurementValue> mTemperatureListener =
-        new BleCharacteristic.ValueReadyCallback<ChTemperatureMeasurement.TemperatureMeasurementValue>() {
-            @Override
-            public void onValueReady(final ChTemperatureMeasurement.TemperatureMeasurementValue temperature) {
-                displayTemperature(temperature.getTemperatureMeasurement());
-            }
-        };
-
-    private final BleCharacteristic.ValueReadyCallback<ChStepCount.StepCountValue> mStepCountListener =
-        new BleCharacteristic.ValueReadyCallback<ChStepCount.StepCountValue>() {
-            @Override
-            public void onValueReady(final ChStepCount.StepCountValue stepCountValue) {
-                displayStepCount(stepCountValue.value);
-            }
-        };
-
     private final BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue> mAccelerationEnergyMagnitudeListener =
         new BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue>() {
             @Override
@@ -291,7 +271,7 @@ public class HomeActivity extends Activity {
             }
         };
 
-    private void displayHeartRate(final int bpm) {
+    private void displayHeartRate(String bpm) {
         TextView textView = (TextView)findViewById(R.id.textview_heart_rate);
         textView.setText(bpm + " bpm");
 
@@ -343,9 +323,12 @@ public class HomeActivity extends Activity {
         textView.setText(percents + "%");
     }
 
-    private void displayTemperature(final float degreesCelsius) {
+    private void displayTemperature(String degreesCelsius) {
         TextView textView = (TextView)findViewById(R.id.textview_temperature);
-        textView.setText(degreesCelsius + "\u00b0C");
+        float c = Float.parseFloat(degreesCelsius);
+        DecimalFormat df = new DecimalFormat("#.####");
+        df.setRoundingMode(RoundingMode.CEILING);
+        textView.setText(df.format(c) + "\u00b0C");
 
         ScaleAnimation effect =  new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 1f);
         effect.setDuration(ANIMATION_DURATION);

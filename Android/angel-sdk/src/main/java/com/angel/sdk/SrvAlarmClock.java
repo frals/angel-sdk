@@ -34,6 +34,7 @@ import android.bluetooth.BluetoothGattService;
 
 import com.angel.sdk.BleCharacteristic.ValueReadyCallback;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.UUID;
@@ -43,12 +44,31 @@ import java.util.UUID;
  * 
  * 
  */
-class SrvAlarmClock extends BleService {
+public class SrvAlarmClock extends BleService {
     public final static UUID SERVICE_UUID = UUID.fromString("7cd50edd-8bab-44ff-a8e8-82e19393af10");
 
 
     public SrvAlarmClock(BluetoothGattService vanillaGattService, BleDevice bleDevice) {
         super(SERVICE_UUID, vanillaGattService, bleDevice);
+
+        try {
+
+            // Register the concrete characteristic classes. Failing one of the
+            // assertions bellow would indicate incorrect definition of one of
+            // the characteristics.
+            mChAlarmClockControlPoint = createAndRegisterCharacteristic(ChAlarmClockControlPoint.class);
+
+        } catch (InstantiationException e) {
+            throw new AssertionError();
+        } catch (IllegalAccessException e) {
+            throw new AssertionError();
+        } catch (NoSuchMethodException e) {
+            throw new AssertionError();
+        } catch (IllegalArgumentException e) {
+            throw new AssertionError();
+        } catch (InvocationTargetException e) {
+            throw new AssertionError();
+        }
     }
 
 
@@ -67,7 +87,7 @@ class SrvAlarmClock extends BleService {
      * clock.
      */
     public ChAlarmClockControlPoint getControlPointCharacteristic() {
-        return null;
+        return mChAlarmClockControlPoint;
     }
 
 
@@ -85,4 +105,6 @@ class SrvAlarmClock extends BleService {
      */
     public void readCurrentDateTime(ValueReadyCallback<GregorianCalendar> callback) {
     }
+
+    private ChAlarmClockControlPoint mChAlarmClockControlPoint;
 }
