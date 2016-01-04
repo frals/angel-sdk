@@ -170,10 +170,10 @@ public class HomeActivity extends Activity {
                         "TIMESTAMP DESC", // g. order by
                         "1"); // h. limit
 
-        if (cursor != null)
+        if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-
-        displayBatteryLevel(Integer.parseInt(cursor.getString(2)));
+            displayBatteryLevel(Integer.parseInt(cursor.getString(2)));
+        }
     }
 
     private void getLastBPM() {
@@ -189,10 +189,10 @@ public class HomeActivity extends Activity {
                         "TIMESTAMP DESC", // g. order by
                         "1"); // h. limit
 
-        if (cursor != null)
+        if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-
-        displayHeartRate(cursor.getString(2));
+            displayHeartRate(cursor.getString(2));
+        }
     }
 
     private void getLastTemp() {
@@ -208,10 +208,10 @@ public class HomeActivity extends Activity {
                         "TIMESTAMP DESC", // g. order by
                         "1"); // h. limit
 
-        if (cursor != null)
+        if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-
-        displayTemperature(cursor.getString(2));
+            displayTemperature(cursor.getString(2));
+        }
     }
 
     protected void onStart() {
