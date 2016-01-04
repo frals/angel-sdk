@@ -217,4 +217,19 @@
             android:text="123456789g"/>
     </LinearLayout>
 
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="10dp"
+        android:layout_weight="1">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Share"
+            style="@style/AppTheme"
+            android:enabled="true"
+            android:onClick="OnShareClicked"/>
+    </LinearLayout>
+
 </LinearLayout>

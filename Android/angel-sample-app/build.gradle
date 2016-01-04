@@ -34,4 +34,5 @@ android {
 dependencies {
     //compile fileTree(dir: 'libs', include: ['*.aar'])
     compile project(':angel-sdk')
+    compile "com.android.support:support-v4:19.1.0"
 }

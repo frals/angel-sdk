@@ -32,16 +32,16 @@
 package com.angel.sample_app;
 
 import android.app.Activity;
-import android.app.Notification;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.support.v4.content.FileProvider;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
@@ -55,20 +55,17 @@ import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;
 import com.angel.sdk.ChAccelerationEnergyMagnitude;
 import com.angel.sdk.ChAccelerationWaveform;
-import com.angel.sdk.ChBatteryLevel;
-import com.angel.sdk.ChHeartRateMeasurement;
 import com.angel.sdk.ChOpticalWaveform;
-import com.angel.sdk.ChStepCount;
-import com.angel.sdk.ChTemperatureMeasurement;
-import com.angel.sdk.SrvActivityMonitoring;
-import com.angel.sdk.SrvBattery;
-import com.angel.sdk.SrvHealthThermometer;
-import com.angel.sdk.SrvHeartRate;
 import com.angel.sdk.SrvWaveformSignal;
 
 import junit.framework.Assert;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.RoundingMode;
+import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 
 public class HomeActivity extends Activity {
@@ -84,7 +81,7 @@ public class HomeActivity extends Activity {
         SharedPreferences preferences = getApplicationContext().getSharedPreferences("ble", Context.MODE_PRIVATE);
         mBleDeviceAddress = preferences.getString("ble", "");
         if (mBleDeviceAddress.isEmpty()) {
-            throw new RuntimeException("Activity started without a BT device, abort!");
+            //throw new RuntimeException("Activity started without a BT device, abort!");
         }
 
         mHandler = new Handler(this.getMainLooper());
@@ -103,6 +100,55 @@ public class HomeActivity extends Activity {
         };
         updateReadings();
         scheduleUpdaters();
+    }
+
+    public void OnShareClicked(View view) {
+        try {
+            shareDatabase();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void shareDatabase() throws IOException {
+        File privDb = new File(mDbHelper.getReadableDatabase().getPath());
+        File requestFile = new File(getFilesDir(), "databases/" + DatabaseHelper.DATABASE_NAME);
+
+        requestFile.getParentFile().mkdirs();
+        if (!requestFile.exists()) {
+            requestFile.createNewFile();
+        }
+
+        requestFile.setWritable(true);
+
+        FileChannel inputChannel = null;
+        FileChannel outputChannel = null;
+        try {
+            inputChannel = new FileInputStream(privDb).getChannel();
+            outputChannel = new FileOutputStream(requestFile).getChannel();
+            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
+        } finally {
+            inputChannel.close();
+            outputChannel.close();
+        }
+
+        Uri fileUri = null;
+        try {
+            fileUri = FileProvider.getUriForFile(this, "com.angel.sample_app.fileprovider",
+                    requestFile);
+        } catch (IllegalArgumentException e) {
+            Log.e("File Selector", "The selected file can't be shared: " + requestFile.getAbsolutePath());
+        }
+        if (fileUri != null) {
+            Intent shareIntent = new Intent("com.angel.sample_app.ACTION_RETURN_FILE");
+            shareIntent.setAction(Intent.ACTION_SEND);
+            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
+            shareIntent.setDataAndType(fileUri, getContentResolver().getType(fileUri));
+            startActivity(Intent.createChooser(shareIntent, "Share to"));
+        }
+
+
     }
 
     private void updateReadings() {
@@ -264,18 +310,18 @@ public class HomeActivity extends Activity {
     };
 
     private final BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue> mAccelerationEnergyMagnitudeListener =
-        new BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue>() {
-            @Override
-            public void onValueReady(final ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue accelerationEnergyMagnitudeValue) {
-                displayAccelerationEnergyMagnitude(accelerationEnergyMagnitudeValue.value);
-            }
-        };
+            new BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue>() {
+                @Override
+                public void onValueReady(final ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue accelerationEnergyMagnitudeValue) {
+                    displayAccelerationEnergyMagnitude(accelerationEnergyMagnitudeValue.value);
+                }
+            };
 
     private void displayHeartRate(String bpm) {
-        TextView textView = (TextView)findViewById(R.id.textview_heart_rate);
+        TextView textView = (TextView) findViewById(R.id.textview_heart_rate);
         textView.setText(bpm + " bpm");
 
-        ScaleAnimation effect =  new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        ScaleAnimation effect = new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         effect.setDuration(ANIMATION_DURATION);
         effect.setRepeatMode(Animation.REVERSE);
         effect.setRepeatCount(1);
@@ -288,18 +334,18 @@ public class HomeActivity extends Activity {
         int iconId;
         if (db > -70) {
             iconId = R.drawable.ic_signal_4;
-        } else if (db > - 80) {
+        } else if (db > -80) {
             iconId = R.drawable.ic_signal_3;
-        } else if (db > - 85) {
+        } else if (db > -85) {
             iconId = R.drawable.ic_signal_2;
-        } else if (db > - 87) {
+        } else if (db > -87) {
             iconId = R.drawable.ic_signal_1;
         } else {
             iconId = R.drawable.ic_signal_0;
         }
-        ImageView imageView = (ImageView)findViewById(R.id.imageview_signal);
+        ImageView imageView = (ImageView) findViewById(R.id.imageview_signal);
         imageView.setImageResource(iconId);
-        TextView textView = (TextView)findViewById(R.id.textview_signal);
+        TextView textView = (TextView) findViewById(R.id.textview_signal);
         textView.setText(db + "db");
     }
 
@@ -317,20 +363,20 @@ public class HomeActivity extends Activity {
             iconId = R.drawable.ic_battery_4;
         }
 
-        ImageView imageView = (ImageView)findViewById(R.id.imageview_battery);
+        ImageView imageView = (ImageView) findViewById(R.id.imageview_battery);
         imageView.setImageResource(iconId);
-        TextView textView = (TextView)findViewById(R.id.textview_battery);
+        TextView textView = (TextView) findViewById(R.id.textview_battery);
         textView.setText(percents + "%");
     }
 
     private void displayTemperature(String degreesCelsius) {
-        TextView textView = (TextView)findViewById(R.id.textview_temperature);
+        TextView textView = (TextView) findViewById(R.id.textview_temperature);
         float c = Float.parseFloat(degreesCelsius);
         DecimalFormat df = new DecimalFormat("#.####");
         df.setRoundingMode(RoundingMode.CEILING);
         textView.setText(df.format(c) + "\u00b0C");
 
-        ScaleAnimation effect =  new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 1f);
+        ScaleAnimation effect = new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 1f);
         effect.setDuration(ANIMATION_DURATION);
         effect.setRepeatMode(Animation.REVERSE);
         effect.setRepeatCount(1);
@@ -339,7 +385,7 @@ public class HomeActivity extends Activity {
     }
 
     private void displayStepCount(final int stepCount) {
-        TextView textView = (TextView)findViewById(R.id.textview_step_count);
+        TextView textView = (TextView) findViewById(R.id.textview_step_count);
         Assert.assertNotNull(textView);
         textView.setText(stepCount + " steps");
 
@@ -371,7 +417,7 @@ public class HomeActivity extends Activity {
         Assert.assertNotNull(textView);
         textView.setText(accelerationEnergyMagnitude + "g");
 
-        ScaleAnimation effect =  new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        ScaleAnimation effect = new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         effect.setDuration(ANIMATION_DURATION);
         effect.setRepeatMode(Animation.REVERSE);
         effect.setRepeatCount(1);
@@ -406,4 +452,6 @@ public class HomeActivity extends Activity {
     private Handler mHandler;
     private Runnable mPeriodicReader;
     private ChAccelerationEnergyMagnitude mChAccelerationEnergyMagnitude = null;
+
+
 }
