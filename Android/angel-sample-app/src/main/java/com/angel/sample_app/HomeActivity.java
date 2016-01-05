@@ -46,9 +46,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.angel.sample_app.persistence.SenseDatabase;
+import com.angel.sample_app.service.BluetoothService;
 import com.angel.sample_app.util.ShareHelper;
-
-import junit.framework.Assert;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -210,7 +209,6 @@ public class HomeActivity extends Activity {
 
     private void displayStepCount(final int stepCount) {
         TextView textView = (TextView) findViewById(R.id.textview_step_count);
-        Assert.assertNotNull(textView);
         textView.setText(stepCount + " steps");
 
         TranslateAnimation moveDown = new TranslateAnimation(
@@ -238,7 +236,6 @@ public class HomeActivity extends Activity {
 
     private void displayAccelerationEnergyMagnitude(final int accelerationEnergyMagnitude) {
         TextView textView = (TextView) findViewById(R.id.textview_acceleration);
-        Assert.assertNotNull(textView);
         textView.setText(accelerationEnergyMagnitude + "g");
 
         ScaleAnimation effect = new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);

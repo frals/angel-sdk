@@ -1,4 +1,4 @@
-package com.angel.sample_app;
+package com.angel.sample_app.service;
 
 import android.content.Context;
 import android.os.Handler;
@@ -7,22 +7,16 @@ import android.os.Looper;
 
 import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;
-import com.angel.sdk.ChAccelerationEnergyMagnitude;
-import com.angel.sdk.ChAccelerationWaveform;
-import com.angel.sdk.ChAlarmClockControlPoint;
 import com.angel.sdk.ChBatteryLevel;
 import com.angel.sdk.ChHeartRateMeasurement;
-import com.angel.sdk.ChOpticalWaveform;
 import com.angel.sdk.ChStepCount;
 import com.angel.sdk.ChTemperatureMeasurement;
 import com.angel.sdk.SrvActivityMonitoring;
 import com.angel.sdk.SrvBattery;
 import com.angel.sdk.SrvHealthThermometer;
 import com.angel.sdk.SrvHeartRate;
-import com.angel.sdk.SrvAlarmClock;
 
 public class SensorReader {
-
 
     private Looper mLooper;
     private Handler mHandler;

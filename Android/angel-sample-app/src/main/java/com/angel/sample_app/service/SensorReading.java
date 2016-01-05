@@ -1,4 +1,4 @@
-package com.angel.sample_app;
+package com.angel.sample_app.service;
 
 import java.util.GregorianCalendar;
 

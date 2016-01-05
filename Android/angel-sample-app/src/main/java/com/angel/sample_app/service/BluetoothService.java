@@ -1,4 +1,4 @@
-package com.angel.sample_app;
+package com.angel.sample_app.service;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -12,6 +12,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+import com.angel.sample_app.HomeActivity;
+import com.angel.sample_app.R;
 import com.angel.sample_app.persistence.ReadingsContract.SensorEntry;
 import com.angel.sample_app.persistence.SenseDatabase;
 

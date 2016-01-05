@@ -55,7 +55,7 @@
             android:label="@string/title_activity_home"></activity>
 
         <service
-            android:name=".BluetoothService"
+            android:name=".service.BluetoothService"
             android:enabled="true"
             android:exported="true"></service>
     </application>
