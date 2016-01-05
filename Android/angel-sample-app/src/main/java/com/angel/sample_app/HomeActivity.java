@@ -51,6 +51,8 @@ import com.angel.sample_app.util.ShareHelper;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 public class HomeActivity extends Activity {
 
@@ -121,7 +123,9 @@ public class HomeActivity extends Activity {
 
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
-            displayHeartRate(cursor.getString(2));
+            SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String timestamp = fmt.format(new Date(Long.parseLong(cursor.getString(0)) * 1000));
+            displayHeartRate(cursor.getString(2), timestamp);
         }
     }
 
@@ -140,9 +144,12 @@ public class HomeActivity extends Activity {
         unscheduleUpdaters();
     }
 
-    private void displayHeartRate(String bpm) {
+    private void displayHeartRate(String bpm, String timestamp) {
         TextView textView = (TextView) findViewById(R.id.textview_heart_rate);
         textView.setText(bpm + " bpm");
+
+        TextView timestampView = (TextView) findViewById(R.id.textview_heart_rate_timestamp);
+        timestampView.setText(timestamp);
 
         ScaleAnimation effect = new ScaleAnimation(1f, 0.5f, 1f, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
         effect.setDuration(ANIMATION_DURATION);

@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout android:id="@+id/layout_measurements"
-              xmlns:android="http://schemas.android.com/apk/res/android"
-              android:layout_width="match_parent"
-              android:layout_height="match_parent"
-              android:background="@drawable/ic_home_background"
-              android:orientation="vertical"
-              android:paddingBottom="2dp"
-              android:paddingTop="0dp">
+<LinearLayout
+    android:id="@+id/layout_measurements"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/ic_home_background"
+    android:orientation="vertical"
+    android:paddingBottom="2dp"
+    android:paddingTop="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -54,34 +55,49 @@
         android:orientation="horizontal"
         android:padding="10dp">
 
-        <LinearLayout
+        <ImageView
+            android:id="@+id/imageview_heart"
             android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:background="@drawable/ic_home_circle"
-            android:orientation="vertical"
-            android:padding="20dp">
+            android:layout_height="wrap_content"
+            android:background="@drawable/ic_home_heart"
+            android:scaleType="centerCrop"
+            />
 
-            <ImageView
-                android:id="@+id/imageview_heart"
-                android:layout_width="fill_parent"
-                android:layout_height="fill_parent"
-                android:background="@drawable/ic_home_heart"
-                android:scaleType="centerCrop"
-                />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/textview_heart_rate"
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="center_vertical"
-            android:gravity="center_vertical"
-            android:paddingStart="20dp"
-            android:textAlignment="gravity"
-            android:textAppearance="?android:attr/textAppearanceLarge"
-            android:textColor="@android:color/white"
-            android:textSize="32sp"
-            android:textStyle="bold"/>
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/textview_heart_rate"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:gravity="start"
+                android:paddingStart="20dp"
+                android:textAlignment="gravity"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:text="BPM"/>
+
+            <TextView
+                android:id="@+id/textview_heart_rate_timestamp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:gravity="start"
+                android:paddingStart="20dp"
+                android:textAlignment="gravity"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@android:color/white"
+                android:textSize="16sp"
+                android:text="timestamp"/>
+
+
+        </LinearLayout>
     </LinearLayout>
 
     <LinearLayout

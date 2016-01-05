@@ -103,6 +103,9 @@ public class ScanActivity extends Activity implements OnClickListener {
         mControlAction = (TextView) findViewById(R.id.controlAction);
 
         mDeviceListAdapter = new ListItemsAdapter(this, R.layout.list_item);
+
+        Intent intent = new Intent(this, HomeActivity.class);
+        startActivity(intent);
     }
 
 
