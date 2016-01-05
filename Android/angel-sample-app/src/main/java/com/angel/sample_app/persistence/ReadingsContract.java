@@ -3,8 +3,6 @@ package com.angel.sample_app.persistence;
 import android.provider.BaseColumns;
 
 public class ReadingsContract {
-    // To prevent someone from accidentally instantiating the contract class,
-    // give it an empty constructor.
     public ReadingsContract() {
     }
 

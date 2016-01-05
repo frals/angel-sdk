@@ -49,6 +49,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.angel.sample_app.util.ShareHelper;
 import com.angel.sdk.BleScanner;
 import com.angel.sdk.BluetoothInaccessibleException;
 
@@ -226,4 +227,14 @@ public class ScanActivity extends Activity implements OnClickListener {
         super.onStop();
         stopScan();
     }
+
+    public void OnShareClicked(View view) {
+        try {
+            ShareHelper.shareDatabase(this);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }

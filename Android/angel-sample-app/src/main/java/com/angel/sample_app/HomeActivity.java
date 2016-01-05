@@ -36,12 +36,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.content.FileProvider;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.ScaleAnimation;
@@ -49,8 +45,8 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.angel.sample_app.persistence.DatabaseHelper;
-import com.angel.sample_app.persistence.ReadingsContract;
+import com.angel.sample_app.persistence.SenseDatabase;
+import com.angel.sample_app.util.ShareHelper;
 import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;
 import com.angel.sdk.ChAccelerationEnergyMagnitude;
@@ -60,17 +56,12 @@ import com.angel.sdk.SrvWaveformSignal;
 
 import junit.framework.Assert;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
 import java.math.RoundingMode;
-import java.nio.channels.FileChannel;
 import java.text.DecimalFormat;
 
 public class HomeActivity extends Activity {
 
-    private DatabaseHelper mDbHelper;
+    private SenseDatabase mSenseDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +80,7 @@ public class HomeActivity extends Activity {
         Intent intent = new Intent(getApplicationContext(), BluetoothService.class);
         startService(intent);
 
-        mDbHelper = new DatabaseHelper(getApplicationContext());
+        mSenseDatabase = new SenseDatabase(getApplicationContext());
 
         mPeriodicReader = new Runnable() {
             @Override
@@ -104,51 +95,10 @@ public class HomeActivity extends Activity {
 
     public void OnShareClicked(View view) {
         try {
-            shareDatabase();
+            ShareHelper.shareDatabase(this);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private void shareDatabase() throws IOException {
-        File privDb = new File(mDbHelper.getReadableDatabase().getPath());
-        File requestFile = new File(getFilesDir(), "databases/" + DatabaseHelper.DATABASE_NAME);
-
-        requestFile.getParentFile().mkdirs();
-        if (!requestFile.exists()) {
-            requestFile.createNewFile();
-        }
-
-        requestFile.setWritable(true);
-
-        FileChannel inputChannel = null;
-        FileChannel outputChannel = null;
-        try {
-            inputChannel = new FileInputStream(privDb).getChannel();
-            outputChannel = new FileOutputStream(requestFile).getChannel();
-            outputChannel.transferFrom(inputChannel, 0, inputChannel.size());
-        } finally {
-            inputChannel.close();
-            outputChannel.close();
-        }
-
-        Uri fileUri = null;
-        try {
-            fileUri = FileProvider.getUriForFile(this, "com.angel.sample_app.fileprovider",
-                    requestFile);
-        } catch (IllegalArgumentException e) {
-            Log.e("File Selector", "The selected file can't be shared: " + requestFile.getAbsolutePath());
-        }
-        if (fileUri != null) {
-            Intent shareIntent = new Intent("com.angel.sample_app.ACTION_RETURN_FILE");
-            shareIntent.setAction(Intent.ACTION_SEND);
-            shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
-            shareIntent.setDataAndType(fileUri, getContentResolver().getType(fileUri));
-            startActivity(Intent.createChooser(shareIntent, "Share to"));
-        }
-
-
     }
 
     private void updateReadings() {
@@ -158,17 +108,7 @@ public class HomeActivity extends Activity {
     }
 
     private void getLastBat() {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        Cursor cursor =
-                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
-                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
-                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'battery'", // c. selections
-                        null, // d. selections args
-                        null, // e. group by
-                        null, // f. having
-                        "TIMESTAMP DESC", // g. order by
-                        "1"); // h. limit
+        Cursor cursor = mSenseDatabase.getLastBatteryReading();
 
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -177,17 +117,7 @@ public class HomeActivity extends Activity {
     }
 
     private void getLastBPM() {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        Cursor cursor =
-                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
-                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
-                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'hr'", // c. selections
-                        null, // d. selections args
-                        null, // e. group by
-                        null, // f. having
-                        "TIMESTAMP DESC", // g. order by
-                        "1"); // h. limit
+        Cursor cursor = mSenseDatabase.getLastHeartrateReading();
 
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();
@@ -196,17 +126,7 @@ public class HomeActivity extends Activity {
     }
 
     private void getLastTemp() {
-        SQLiteDatabase db = mDbHelper.getReadableDatabase();
-
-        Cursor cursor =
-                db.query(ReadingsContract.SensorEntry.TABLE_NAME, // a. table
-                        new String[]{ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, ReadingsContract.SensorEntry.COLUMN_NAME_VALUE}, // b. column names
-                        ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR + " = 'temp'", // c. selections
-                        null, // d. selections args
-                        null, // e. group by
-                        null, // f. having
-                        "TIMESTAMP DESC", // g. order by
-                        "1"); // h. limit
+        Cursor cursor = mSenseDatabase.getLastTemperatureReading();
 
         if (cursor != null && cursor.getCount() > 0) {
             cursor.moveToFirst();

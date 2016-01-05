@@ -12,8 +12,8 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.angel.sample_app.persistence.DatabaseHelper;
-import com.angel.sample_app.persistence.ReadingsContract;
+import com.angel.sample_app.persistence.ReadingsContract.SensorEntry;
+import com.angel.sample_app.persistence.SenseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;
@@ -22,7 +22,7 @@ public class BluetoothService extends Service implements SensorReading {
 
     private static final String TAG = "ServiceReading";
     private SensorReader mSensor = null;
-    DatabaseHelper mDbHelper = null;
+    SenseDatabase mSenseDatabase = null;
 
     public BluetoothService() {
     }
@@ -41,7 +41,7 @@ public class BluetoothService extends Service implements SensorReading {
         if (bleDeviceAddress.isEmpty()) {
             Toast.makeText(this, "No device found!", Toast.LENGTH_SHORT).show();
         } else {
-            mDbHelper = new DatabaseHelper(getApplicationContext());
+            mSenseDatabase = new SenseDatabase(getApplicationContext());
             mSensor = new SensorReader(getApplicationContext(), bleDeviceAddress, this);
             mSensor.connect();
 
@@ -73,17 +73,17 @@ public class BluetoothService extends Service implements SensorReading {
 
     @Override
     public void onHeartRateReading(int bpm, int energyExpended, int[] RRIntervals) {
-        Log.d(TAG, "HR: " + bpm + " EnergyExpended: " + energyExpended);
+        //Log.d(TAG, "HR: " + bpm + " EnergyExpended: " + energyExpended);
         //Toast.makeText(this, "HR: " + bpm, Toast.LENGTH_LONG).show();
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
+        SQLiteDatabase db = mSenseDatabase.getWritableDatabase();
 
         long unixTime = System.currentTimeMillis() / 1000L;
         ContentValues values = new ContentValues();
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "hr");
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, bpm);
+        values.put(SensorEntry.COLUMN_NAME_SENSOR, "hr");
+        values.put(SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(SensorEntry.COLUMN_NAME_VALUE, bpm);
 
-        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
+        db.insert(SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
@@ -93,36 +93,36 @@ public class BluetoothService extends Service implements SensorReading {
 
     @Override
     public void onBatteryLevelReading(int percent) {
-        Log.d(TAG, "Battery: " + percent + "%");
+        //Log.d(TAG, "Battery: " + percent + "%");
         //Toast.makeText(this, "Battery: " + percent + "%", Toast.LENGTH_LONG).show();
 
         long unixTime = System.currentTimeMillis() / 1000L;
         ContentValues values = new ContentValues();
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "battery");
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, percent);
+        values.put(SensorEntry.COLUMN_NAME_SENSOR, "battery");
+        values.put(SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(SensorEntry.COLUMN_NAME_VALUE, percent);
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
+        SQLiteDatabase db = mSenseDatabase.getWritableDatabase();
+        db.insert(SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
     public void onTemperatureReading(float degreesCelsius, int temperatureUnits, GregorianCalendar timestamp, int temperatureType) {
-        Log.d(TAG, "Temp: " + degreesCelsius + "c. Timestamp: " + format(timestamp));
+        //Log.d(TAG, "Temp: " + degreesCelsius + "c. Timestamp: " + format(timestamp));
 
         long unixTime = System.currentTimeMillis() / 1000L;
         ContentValues values = new ContentValues();
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_SENSOR, "temp");
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
-        values.put(ReadingsContract.SensorEntry.COLUMN_NAME_VALUE, degreesCelsius);
+        values.put(SensorEntry.COLUMN_NAME_SENSOR, "temp");
+        values.put(SensorEntry.COLUMN_NAME_TIMESTAMP, unixTime);
+        values.put(SensorEntry.COLUMN_NAME_VALUE, degreesCelsius);
 
-        SQLiteDatabase db = mDbHelper.getWritableDatabase();
-        db.insert(ReadingsContract.SensorEntry.TABLE_NAME, "null", values);
+        SQLiteDatabase db = mSenseDatabase.getWritableDatabase();
+        db.insert(SensorEntry.TABLE_NAME, "null", values);
     }
 
     @Override
     public void onStepCountReading(int stepCount) {
-        Log.d(TAG, "Step: " + stepCount);
+        //Log.d(TAG, "Step: " + stepCount);
     }
 
     @Override

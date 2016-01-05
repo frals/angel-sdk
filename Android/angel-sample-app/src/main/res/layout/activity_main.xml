@@ -38,6 +38,13 @@
     
     </RelativeLayout>
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:dividerPadding="5dp"
+        android:paddingBottom="25dp"
+        android:showDividers="middle">
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -49,4 +56,16 @@
         android:textColor="@color/angel_gold_color"
         android:gravity="center"
         android:layout_centerVertical="true"/>
+
+    <TextView
+        android:id="@+id/shareAction"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:gravity="center_horizontal"
+        android:text="SHARE"
+        android:textColor="@color/angel_gold_color"
+        android:textSize="22sp"
+        android:onClick="OnShareClicked"/>
+    </LinearLayout>
 </RelativeLayout>
