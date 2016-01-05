@@ -47,12 +47,6 @@ import android.widget.TextView;
 
 import com.angel.sample_app.persistence.SenseDatabase;
 import com.angel.sample_app.util.ShareHelper;
-import com.angel.sdk.BleCharacteristic;
-import com.angel.sdk.BleDevice;
-import com.angel.sdk.ChAccelerationEnergyMagnitude;
-import com.angel.sdk.ChAccelerationWaveform;
-import com.angel.sdk.ChOpticalWaveform;
-import com.angel.sdk.SrvWaveformSignal;
 
 import junit.framework.Assert;
 
@@ -63,11 +57,18 @@ public class HomeActivity extends Activity {
 
     private SenseDatabase mSenseDatabase;
 
+    private static final int RSSI_UPDATE_INTERVAL = 1000; // Milliseconds
+    private static final int ANIMATION_DURATION = 500; // Milliseconds
+
+    private String mBleDeviceAddress;
+
+    private Handler mHandler;
+    private Runnable mPeriodicReader;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_measurements);
-        orientation = getResources().getConfiguration().orientation;
 
         SharedPreferences preferences = getApplicationContext().getSharedPreferences("ble", Context.MODE_PRIVATE);
         mBleDeviceAddress = preferences.getString("ble", "");
@@ -134,108 +135,11 @@ public class HomeActivity extends Activity {
         }
     }
 
-    protected void onStart() {
-        super.onStart();
-
-        /*if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            connectGraphs(mBleDeviceAddress);
-        } else {
-            connect(mBleDeviceAddress);
-        }*/
-
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
         unscheduleUpdaters();
-        /*if (orientation == Configuration.ORIENTATION_PORTRAIT) {
-            displaySignalStrength(0);
-        }
-        unscheduleUpdaters();
-        mBleDevice.disconnect();*/
     }
-
-    private void connectGraphs(String deviceAddress) {
-
-        if (mBleDevice != null) {
-            mBleDevice.disconnect();
-        }
-        mBleDevice = new BleDevice(this, mDeviceGraphLifecycleCallback, mHandler);
-
-        try {
-            mBleDevice.registerServiceClass(SrvWaveformSignal.class);
-
-        } catch (NoSuchMethodException e) {
-            throw new AssertionError();
-        } catch (IllegalAccessException e) {
-            throw new AssertionError();
-        } catch (InstantiationException e) {
-            throw new AssertionError();
-        }
-
-        mBleDevice.connect(deviceAddress);
-
-    }
-
-
-    private void connect(String deviceAddress) {
-        // A device has been chosen from the list. Create an instance of BleDevice,
-        // populate it with interesting services and then connect
-
-        scheduleUpdaters();
-        displayOnDisconnect();
-    }
-
-    private final BleDevice.LifecycleCallback mDeviceGraphLifecycleCallback = new BleDevice.LifecycleCallback() {
-        @Override
-        public void onBluetoothServicesDiscovered(BleDevice bleDevice) {
-            bleDevice.getService(SrvWaveformSignal.class).getAccelerationWaveform().enableNotifications(mAccelerationWaveformListener);
-            bleDevice.getService(SrvWaveformSignal.class).getOpticalWaveform().enableNotifications(mOpticalWaveformListener);
-        }
-
-        @Override
-        public void onBluetoothDeviceDisconnected() {
-            unscheduleUpdaters();
-            connectGraphs(mBleDeviceAddress);
-        }
-
-        @Override
-        public void onReadRemoteRssi(int i) {
-
-        }
-    };
-
-
-    private final BleCharacteristic.ValueReadyCallback<ChAccelerationWaveform.AccelerationWaveformValue> mAccelerationWaveformListener = new BleCharacteristic.ValueReadyCallback<ChAccelerationWaveform.AccelerationWaveformValue>() {
-        @Override
-        public void onValueReady(ChAccelerationWaveform.AccelerationWaveformValue accelerationWaveformValue) {
-            if (accelerationWaveformValue != null && accelerationWaveformValue.wave != null && mAccelerationWaveformView != null)
-                for (Integer item : accelerationWaveformValue.wave) {
-                    mAccelerationWaveformView.addValue(item);
-                }
-
-        }
-    };
-
-    private final BleCharacteristic.ValueReadyCallback<ChOpticalWaveform.OpticalWaveformValue> mOpticalWaveformListener = new BleCharacteristic.ValueReadyCallback<ChOpticalWaveform.OpticalWaveformValue>() {
-        @Override
-        public void onValueReady(ChOpticalWaveform.OpticalWaveformValue opticalWaveformValue) {
-            if (opticalWaveformValue != null && opticalWaveformValue.wave != null)
-                for (ChOpticalWaveform.OpticalSample item : opticalWaveformValue.wave) {
-                    mGreenOpticalWaveformView.addValue(item.green);
-                    mBlueOpticalWaveformView.addValue(item.blue);
-                }
-        }
-    };
-
-    private final BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue> mAccelerationEnergyMagnitudeListener =
-            new BleCharacteristic.ValueReadyCallback<ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue>() {
-                @Override
-                public void onValueReady(final ChAccelerationEnergyMagnitude.AccelerationEnergyMagnitudeValue accelerationEnergyMagnitudeValue) {
-                    displayAccelerationEnergyMagnitude(accelerationEnergyMagnitudeValue.value);
-                }
-            };
 
     private void displayHeartRate(String bpm) {
         TextView textView = (TextView) findViewById(R.id.textview_heart_rate);
@@ -346,11 +250,6 @@ public class HomeActivity extends Activity {
         imageView.startAnimation(effect);
     }
 
-    private void displayOnDisconnect() {
-        displaySignalStrength(-99);
-        displayBatteryLevel(0);
-    }
-
     private void scheduleUpdaters() {
         mHandler.post(mPeriodicReader);
     }
@@ -358,20 +257,4 @@ public class HomeActivity extends Activity {
     private void unscheduleUpdaters() {
         mHandler.removeCallbacks(mPeriodicReader);
     }
-
-    private static final int RSSI_UPDATE_INTERVAL = 1000; // Milliseconds
-    private static final int ANIMATION_DURATION = 500; // Milliseconds
-
-    private int orientation;
-
-    private GraphView mAccelerationWaveformView, mBlueOpticalWaveformView, mGreenOpticalWaveformView;
-
-    private BleDevice mBleDevice;
-    private String mBleDeviceAddress;
-
-    private Handler mHandler;
-    private Runnable mPeriodicReader;
-    private ChAccelerationEnergyMagnitude mChAccelerationEnergyMagnitude = null;
-
-
 }
