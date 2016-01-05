@@ -18,9 +18,6 @@ import com.angel.sdk.SrvHeartRate;
 
 public class SensorReader {
 
-    private Looper mLooper;
-    private Handler mHandler;
-
     private Context mContext;
     private String mBleDeviceAddress;
     private SensorReading mCallback;
@@ -32,12 +29,6 @@ public class SensorReader {
         mBleDeviceAddress = bleAddress;
         mContext = context;
         mCallback = callback;
-
-        HandlerThread thread = new HandlerThread("ServiceStartArguments", android.os.Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
-
-        mLooper = thread.getLooper();
-        mHandler = new Handler(mLooper);
     }
 
     public void connect() {
