@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.angel.sample_app"
+    package="se.frals.sense"
     android:versionCode="2"
     android:versionName="1.1">
 
@@ -11,13 +11,12 @@
     <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 
-    <!-- android.permission.INTERNET is needed for the simulator -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
-    <android:uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <android:uses-permission android:name="android.permission.READ_PHONE_STATE" />
-    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <!-- android:theme="@style/AppTheme" -->
     <application
         android:allowBackup="true"
@@ -37,9 +36,9 @@
 
         <provider
             android:name="android.support.v4.content.FileProvider"
-            android:authorities="com.angel.sample_app.fileprovider"
-            android:grantUriPermissions="true"
-            android:exported="false">
+            android:authorities="se.frals.sense.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/filepaths" />
@@ -48,16 +47,16 @@
 
         <service
             android:name="com.angel.sdk.BleController"
-            android:enabled="true"></service>
+            android:enabled="true" />
 
         <activity
             android:name=".HomeActivity"
-            android:label="@string/title_activity_home"></activity>
+            android:label="@string/title_activity_home" />
 
         <service
             android:name=".service.BluetoothService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
     </application>
 
 </manifest>

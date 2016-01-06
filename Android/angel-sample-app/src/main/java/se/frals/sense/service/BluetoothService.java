@@ -1,4 +1,4 @@
-package com.angel.sample_app.service;
+package se.frals.sense.service;
 
 import android.app.Notification;
 import android.app.PendingIntent;
@@ -12,10 +12,10 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.angel.sample_app.HomeActivity;
-import com.angel.sample_app.R;
-import com.angel.sample_app.persistence.ReadingsContract.SensorEntry;
-import com.angel.sample_app.persistence.SenseDatabase;
+import se.frals.sense.HomeActivity;
+import se.frals.sense.R;
+import se.frals.sense.persistence.ReadingsContract.SensorEntry;
+import se.frals.sense.persistence.SenseDatabase;
 
 import java.text.SimpleDateFormat;
 import java.util.GregorianCalendar;

@@ -28,7 +28,7 @@
  * TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-package com.angel.sample_app;
+package se.frals.sense;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -49,7 +49,7 @@ import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
-import com.angel.sample_app.util.ShareHelper;
+import se.frals.sense.util.ShareHelper;
 import com.angel.sdk.BleScanner;
 import com.angel.sdk.BluetoothInaccessibleException;
 

@@ -1,4 +1,4 @@
-package com.angel.sample_app.persistence;
+package se.frals.sense.persistence;
 
 import android.provider.BaseColumns;
 

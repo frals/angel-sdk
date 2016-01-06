@@ -1,11 +1,11 @@
-package com.angel.sample_app.persistence;
+package se.frals.sense.persistence;
 
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
-import com.angel.sample_app.persistence.ReadingsContract.SensorEntry;
+import se.frals.sense.persistence.ReadingsContract.SensorEntry;
 
 public class SenseDatabase extends SQLiteOpenHelper {
     // If you change the database schema, you must increment the database version.

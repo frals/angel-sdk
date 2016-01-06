@@ -1,9 +1,6 @@
-package com.angel.sample_app.service;
+package se.frals.sense.service;
 
 import android.content.Context;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
 
 import com.angel.sdk.BleCharacteristic;
 import com.angel.sdk.BleDevice;

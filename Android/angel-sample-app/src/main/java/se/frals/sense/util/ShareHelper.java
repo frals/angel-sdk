@@ -1,4 +1,4 @@
-package com.angel.sample_app.util;
+package se.frals.sense.util;
 
 import android.content.Context;
 import android.content.Intent;
@@ -6,7 +6,7 @@ import android.net.Uri;
 import android.support.v4.content.FileProvider;
 import android.util.Log;
 
-import com.angel.sample_app.persistence.SenseDatabase;
+import se.frals.sense.persistence.SenseDatabase;
 
 import java.io.File;
 import java.io.FileInputStream;

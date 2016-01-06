@@ -9,7 +9,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <com.angel.sample_app.GraphView
+        <se.frals.sense.GraphView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/graph_green"
@@ -30,7 +30,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <com.angel.sample_app.GraphView
+        <se.frals.sense.GraphView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/graph_blue"
@@ -52,7 +52,7 @@
         android:layout_height="match_parent"
         android:layout_weight="1">
 
-        <com.angel.sample_app.GraphView
+        <se.frals.sense.GraphView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/graph_acceleration"

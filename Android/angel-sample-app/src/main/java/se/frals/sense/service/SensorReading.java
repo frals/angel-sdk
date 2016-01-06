@@ -1,4 +1,4 @@
-package com.angel.sample_app.service;
+package se.frals.sense.service;
 
 import java.util.GregorianCalendar;
 

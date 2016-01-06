@@ -29,7 +29,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.angel.sample_app;
+package se.frals.sense;
 
 import java.util.ArrayList;
 
@@ -39,7 +39,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
-
 
 public class ListItemsAdapter extends ArrayAdapter<ListItem> {
 

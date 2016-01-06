@@ -29,7 +29,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.angel.sample_app;
+package se.frals.sense;
 
 import android.app.Activity;
 import android.content.Context;
@@ -45,9 +45,9 @@ import android.view.animation.TranslateAnimation;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.angel.sample_app.persistence.SenseDatabase;
-import com.angel.sample_app.service.BluetoothService;
-import com.angel.sample_app.util.ShareHelper;
+import se.frals.sense.persistence.SenseDatabase;
+import se.frals.sense.service.BluetoothService;
+import se.frals.sense.util.ShareHelper;
 
 import java.math.RoundingMode;
 import java.text.DecimalFormat;

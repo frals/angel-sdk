@@ -29,7 +29,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package com.angel.sample_app;
+package se.frals.sense;
 
 import android.bluetooth.BluetoothDevice;
 
