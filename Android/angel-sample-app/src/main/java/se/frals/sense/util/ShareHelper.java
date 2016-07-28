@@ -42,13 +42,13 @@ public class ShareHelper {
 
         Uri fileUri = null;
         try {
-            fileUri = FileProvider.getUriForFile(context, "com.angel.sample_app.fileprovider",
+            fileUri = FileProvider.getUriForFile(context, "se.frals.sense.fileprovider",
                     requestFile);
         } catch (IllegalArgumentException e) {
             Log.e("File Selector", "The selected file can't be shared: " + requestFile.getAbsolutePath());
         }
         if (fileUri != null) {
-            Intent shareIntent = new Intent("com.angel.sample_app.ACTION_RETURN_FILE");
+            Intent shareIntent = new Intent("se.frals.sense.ACTION_RETURN_FILE");
             shareIntent.setAction(Intent.ACTION_SEND);
             shareIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri);
